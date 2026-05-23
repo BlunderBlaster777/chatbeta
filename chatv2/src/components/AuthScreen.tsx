@@ -15,16 +15,14 @@ export default function AuthScreen() {
     setLoading(true);
     try {
       if (mode === 'signup') {
-        const { data, error: err } = await supabase.auth.signUp({ email, password });
+        const name = displayName.trim() || email.split('@')[0];
+        const { error: err } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { display_name: name } },
+        });
         if (err) throw err;
-        if (data.user) {
-          const name = displayName.trim() || email.split('@')[0];
-          await supabase.from('profiles').upsert({
-            id: data.user.id,
-            display_name: name,
-            avatar_seed: Math.random().toString(36).slice(2, 8),
-          });
-        }
+        // Profile is created automatically by the handle_new_user DB trigger
       } else {
         const { error: err } = await supabase.auth.signInWithPassword({ email, password });
         if (err) throw err;
