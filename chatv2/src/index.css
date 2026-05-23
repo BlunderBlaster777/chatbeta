@@ -586,6 +586,18 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
 .voice-peer-name {
   font-size: 0.82rem;
   color: var(--text1);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.voice-peer-ice {
+  font-size: 11px;
+  color: var(--text2);
+}
+
+.peer-audio {
+  display: none;
 }
 
 .voice-controls {
