@@ -56,6 +56,29 @@ export default function VoiceChannel({ channel, currentUserId, profiles }: Props
 
   const myProfile = profiles[currentUserId] ?? null;
 
+  const upsertPeer = useCallback((userId: string, patch: Partial<Peer> = {}) => {
+    setPeers(prev => {
+      const existing = prev.find(peer => peer.userId === userId);
+      if (existing) {
+        return prev.map(peer => (
+          peer.userId === userId
+            ? { ...peer, ...patch, profile: patch.profile ?? peer.profile ?? profilesRef.current[userId] ?? null }
+            : peer
+        ));
+      }
+
+      return [
+        ...prev,
+        {
+          userId,
+          profile: patch.profile ?? profilesRef.current[userId] ?? null,
+          stream: patch.stream ?? null,
+          muted: patch.muted ?? false,
+        },
+      ];
+    });
+  }, []);
+
   const cleanup = useCallback(() => {
     localStream.current?.getTracks().forEach(t => t.stop());
     localStream.current = null;
@@ -78,9 +101,8 @@ export default function VoiceChannel({ channel, currentUserId, profiles }: Props
     localStream.current?.getTracks().forEach(t => pc.addTrack(t, localStream.current!));
 
     pc.ontrack = e => {
-      setPeers(prev => prev.map(p =>
-        p.userId === userId ? { ...p, stream: e.streams[0] } : p
-      ));
+      const remoteStream = e.streams[0] ?? new MediaStream([e.track]);
+      upsertPeer(userId, { stream: remoteStream });
     };
 
     pc.onicecandidate = e => {
@@ -108,16 +130,15 @@ export default function VoiceChannel({ channel, currentUserId, profiles }: Props
       });
     }
 
-    setPeers(prev => {
-      if (prev.find(p => p.userId === userId)) return prev;
-      return [...prev, {
-        userId,
-        profile: profilesRef.current[userId] ?? null,
-        stream: null,
-        muted: false,
-      }];
-    });
-  }, [currentUserId]);
+    upsertPeer(userId);
+  }, [currentUserId, upsertPeer]);
+
+  useEffect(() => {
+    setPeers(prev => prev.map(peer => ({
+      ...peer,
+      profile: profiles[peer.userId] ?? peer.profile,
+    })));
+  }, [profiles]);
 
   async function drainCandidates(userId: string) {
     const pc = pcsRef.current[userId];
@@ -226,12 +247,36 @@ export default function VoiceChannel({ channel, currentUserId, profiles }: Props
   // DOM audio elements — required for iOS Safari autoplay
   function AudioPlayer({ stream, userId }: { stream: MediaStream; userId: string }) {
     const ref = useRef<HTMLAudioElement>(null);
+
     useEffect(() => {
-      if (ref.current && ref.current.srcObject !== stream) {
-        ref.current.srcObject = stream;
-        ref.current.play().catch(() => {});
+      const audio = ref.current;
+      if (!audio) return;
+
+      const tryPlay = () => {
+        audio.muted = false;
+        audio.defaultMuted = false;
+        audio.volume = 1;
+        void audio.play().catch(() => {});
+      };
+
+      if (audio.srcObject !== stream) {
+        audio.srcObject = stream;
       }
+
+      audio.onloadedmetadata = tryPlay;
+      tryPlay();
+
+      const resumePlayback = () => tryPlay();
+      window.addEventListener('pointerdown', resumePlayback);
+      window.addEventListener('touchend', resumePlayback);
+
+      return () => {
+        audio.onloadedmetadata = null;
+        window.removeEventListener('pointerdown', resumePlayback);
+        window.removeEventListener('touchend', resumePlayback);
+      };
     }, [stream]);
+
     return <audio ref={ref} autoPlay playsInline className="peer-audio" data-peer={userId} />;
   }
 
