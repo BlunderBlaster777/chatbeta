@@ -38,7 +38,7 @@ export default function ServerModal({ onClose, onDone }: Props) {
     setError('');
     setLoading(true);
     try {
-      const { error: err } = await supabase.rpc('join_server_by_code', { code: code.trim().toUpperCase() });
+      const { error: err } = await supabase.rpc('join_server_by_code', { invite: code.trim().toUpperCase() });
       if (err) throw err;
       onDone();
     } catch (err: unknown) {

@@ -60,7 +60,7 @@ export default function App() {
   useEffect(() => {
     if (!user) { setProfile(null); setServers([]); setChannels([]); setDmThreads([]); return; }
     // load own profile
-    supabase.from('profiles').select('*').eq('id', user.id).single()
+    supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
       .then(({ data }) => { if (data) setProfile(data as Profile); });
     loadServers();
     loadDmThreads();
@@ -123,7 +123,7 @@ export default function App() {
 
   const loadProfile = useCallback((userId: string) => {
     if (profiles[userId]) return;
-    supabase.from('profiles').select('*').eq('id', userId).single()
+    supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
       .then(({ data }) => {
         if (data) setProfiles(prev => ({ ...prev, [userId]: data as Profile }));
       });
