@@ -15,7 +15,8 @@ export default function AuthScreen() {
     setLoading(true);
     try {
       if (mode === 'signup') {
-        const name = displayName.trim() || email.split('@')[0];
+        const raw = displayName.trim() || email.split('@')[0];
+        const name = raw.length < 2 ? raw.padEnd(2, '_') : raw.slice(0, 32);
         const { error: err } = await supabase.auth.signUp({
           email,
           password,
@@ -51,7 +52,9 @@ export default function AuthScreen() {
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
                 placeholder="Your name"
-                autoComplete="name"
+                autoComplete="username"
+                minLength={2}
+                maxLength={32}
               />
             </div>
           )}
