@@ -97,7 +97,7 @@ export default function VoiceChannel({ channel, currentUserId, profiles }: Props
     });
 
     ch.on('presence', { event: 'leave' }, ({ leftPresences }) => {
-      (leftPresences as Array<{ userId: string }>).forEach(({ userId }) => {
+      (leftPresences as unknown as Array<{ userId: string }>).forEach(({ userId }) => {
         pcsRef.current[userId]?.close();
         delete pcsRef.current[userId];
         setPeers(prev => prev.filter(p => p.userId !== userId));

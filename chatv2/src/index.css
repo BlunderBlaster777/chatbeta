@@ -795,33 +795,9 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
 }
 
 /* ── Drawer (mobile/tablet sidebar overlay) ───── */
+/* On desktop the sidebar is always visible inline — drawer styles only kick in ≤1024px */
 .drawer-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 50;
-  /* hidden by default on desktop */
-  display: none;
-}
-
-.channel-sidebar.drawer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  z-index: 51;
-  transform: translateX(-100%);
-  transition: transform 0.25s ease;
-  padding-top: var(--safe-top);
-  padding-bottom: var(--safe-bottom);
-  padding-left: var(--safe-left);
-  /* keep width but override the flex shrink from parent */
-  flex-shrink: 0;
-}
-
-.channel-sidebar.drawer.open {
-  transform: translateX(0);
-  box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+  display: none; /* shown only inside media query */
 }
 
 /* ── Bottom tab bar (phones only) ─────────────── */
@@ -877,6 +853,44 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
 
 /* ── iPad (641px – 1024px) ────────────────────── */
 @media (max-width: 1024px) {
+  /* Sidebar becomes a slide-in drawer */
+  .drawer-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .drawer-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .channel-sidebar.drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 51;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+    padding-left: var(--safe-left);
+  }
+
+  .channel-sidebar.drawer.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+  }
+
+  /* topbar shows menu/back button */
+  .topbar-back { display: flex; }
+
   /* Server rail stays visible */
   .server-rail {
     width: 56px;
@@ -889,30 +903,6 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
     width: 38px;
     height: 38px;
   }
-
-  /* Sidebar becomes a drawer */
-  .channel-sidebar {
-    display: flex; /* keep visible in DOM */
-  }
-
-  .drawer-overlay {
-    display: block;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
-  }
-
-  .drawer-overlay.open {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .channel-sidebar.drawer {
-    display: flex;
-  }
-
-  /* topbar shows back/menu button */
-  .topbar-back { display: flex; }
 
   /* input: ensure 16px to prevent iOS zoom */
   .input-wrap textarea {
