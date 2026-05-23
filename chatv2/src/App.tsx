@@ -8,6 +8,7 @@ import MessagePane from './components/MessagePane';
 import VoiceChannel from './components/VoiceChannel';
 import DmPane from './components/DmPane';
 import ServerModal from './components/ServerModal';
+import ServerSettingsModal from './components/ServerSettingsModal';
 import type { User } from '@supabase/supabase-js';
 
 type View =
@@ -39,6 +40,7 @@ export default function App() {
 
   // Modals
   const [showServerModal, setShowServerModal] = useState(false);
+  const [showServerSettings, setShowServerSettings] = useState(false);
 
   // Mobile drawer
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -181,7 +183,7 @@ export default function App() {
           {navMode === 'dm' ? 'Direct Messages' : (activeServer?.name ?? 'Select a server')}
         </span>
         {navMode === 'server' && activeServer && (
-          <button type="button" className="btn-ghost sidebar-settings-btn" title="Settings">
+          <button type="button" className="btn-ghost sidebar-settings-btn" title="Server settings" onClick={() => setShowServerSettings(true)}>
             <Settings size={14} />
           </button>
         )}
@@ -396,6 +398,13 @@ export default function App() {
         <ServerModal
           onClose={() => setShowServerModal(false)}
           onDone={() => { setShowServerModal(false); loadServers(); }}
+        />
+      )}
+
+      {showServerSettings && activeServer && (
+        <ServerSettingsModal
+          server={activeServer}
+          onClose={() => setShowServerSettings(false)}
         />
       )}
     </div>

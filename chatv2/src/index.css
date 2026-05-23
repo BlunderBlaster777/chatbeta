@@ -687,6 +687,22 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
 
 .invite-box-code { flex: 1; color: var(--text0); }
 
+.invite-copy-btn {
+  color: var(--text1);
+  display: flex;
+  align-items: center;
+  padding: 0.2rem;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.invite-copy-btn:hover { color: var(--text0); background: var(--bg3); }
+
+.settings-hint {
+  font-size: 0.8rem;
+  color: var(--text2);
+  margin-bottom: 0.4rem;
+}
+
 /* ── Empty / loading states ───────────────────── */
 .empty-state {
   flex: 1;
